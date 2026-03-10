@@ -1,11 +1,25 @@
 {
   "name": "@heady/headyos-core",
-  "version": "1.0.0",
-  "description": "Heady™ Operating System — the latent OS powering continuous AI reasoning.",
+  "version": "2.0.0",
+  "description": "HeadyOS Core — latent operating system control plane with capability-based routing, liquid node execution, and async orchestration.",
   "main": "index.js",
-  "scripts": { "start": "node index.js", "test": "echo \"Tests coming soon\" && exit 0" },
-  "engines": { "node": ">=20.0.0" },
-  "dependencies": { "express": "^4.21.0" },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test test/*.test.js",
+    "test:ci": "node --test --test-reporter=spec test/*.test.js",
+    "lint": "node --check src/**/*.js index.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
   "author": "Heady Systems LLC <eric@headysystems.com>",
-  "homepage": "https://headyos.com"
+  "homepage": "https://headyos.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HeadyMe/headyos-core"
+  }
 }
