@@ -1,11 +1,40 @@
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
-const siteConfig = require('./site-config.json');
-app.use(express.json({ limit: '1mb' }));
-app.get('/health', (req, res) => res.json({ ok: true, service: 'HeadyOS', domain: 'headyos.com', projected: true, ts: new Date().toISOString() }));
-app.get('/', (req, res) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(`<html><head><title>${siteConfig.name}</title></head><body><h1>${siteConfig.name}</h1><p>${siteConfig.description}</p></body></html>`);
+'use strict';
+
+const { Kernel } = require('./src/kernel');
+const { createApp } = require('./src/app');
+
+async function main() {
+  const kernel = new Kernel();
+  const app = createApp(kernel);
+  const port = kernel.config.PORT;
+
+  await kernel.boot();
+
+  const server = app.listen(port, () => {
+    kernel.logger.info(`HeadyOS listening on port ${port}`, {
+      nodeId: kernel.config.NODE_ID, role: kernel.config.NODE_ROLE, env: kernel.config.NODE_ENV,
+    });
+  });
+
+  const shutdown = async (signal) => {
+    kernel.logger.info(`Received ${signal}, shutting down`);
+    server.close();
+    await kernel.shutdown();
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('unhandledRejection', (err) => {
+    kernel.logger.error('Unhandled rejection', { error: err?.message, stack: err?.stack });
+  });
+  process.on('uncaughtException', (err) => {
+    kernel.logger.error('Uncaught exception', { error: err.message, stack: err.stack });
+    shutdown('uncaughtException');
+  });
+}
+
+main().catch((err) => {
+  console.error('Fatal boot error:', err);
+  process.exit(1);
 });
-app.listen(PORT, () => console.log(`🐝 HeadyOS running at http://localhost:${PORT}`));
