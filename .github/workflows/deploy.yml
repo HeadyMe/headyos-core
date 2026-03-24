@@ -1,9 +1,11 @@
-name: Deploy HeadyOS
+name: HeadyOS Core CI
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,3 +15,11 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm test
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t headyos-core:${{ github.sha }} .
